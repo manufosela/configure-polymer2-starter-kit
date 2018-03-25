@@ -6,8 +6,8 @@
 //        my-app.html : 
 //            String myApp -> title ??
 //            ----> my-view1.html, my-view2.html", my-view3.html -> prefix + sections + .html
-//            ----> name="view1",name="view2",name="view3" -> sectionsName
-//            ----> href="view1",href="view2",href="view3" -> sectionsName
+//            ----> name="view1",name="view2",name="view3" -> sectionsNameMenu
+//            ----> href="view1",href="view2",href="view3" -> sectionsNameMenu
 //            ----> VIew One, View Two, View Three -> sectionsTitle
 //            ----> <my-view1 <my-view2 <my-view3 -> prefix + sections
 //            ----> </my-view1> </my-view2> </my-view3> -> prefix + sections
@@ -35,10 +35,12 @@ changeFiles = function() {
     var myApp =  fs.readFileSync('src/my-app.html','utf8');
     var myView = fs.readFileSync('src/my-view1.html', 'utf8');
 
+    indexHtml = indexHtml.replace(/\s*<!--.*[^>]*-->/g, '');
     indexHtml = indexHtml.replace(/My App/g, config.title);
     manifest = manifest.replace(/My App/g, config.title);
     bower = bower.replace(/My App/g, config.title);
     bower = bower.replace(/\@autor/g, config.autor);
+    myApp = myApp.replace(/\s*<!--.*[^>]*-->/g, '');
     myApp = myApp.replace(/<my-view1/, '-VIEWS-<my-view1');
     myApp = myApp.replace(/<my-view[0-9] name="view[0-9]"><\/my-view[0-9]>/g,'');
     myApp = myApp.replace(/<a name="view1"/, '-REFS-<a name="view1"');
@@ -46,12 +48,14 @@ changeFiles = function() {
     myApp = myApp.replace(/<link rel="lazy-import" href="my-view1/, '-LAZY-<link rel="lazy-import" href="my-view1');
     myApp = myApp.replace(/<link rel="lazy-import" href="my-view[0-9].html">/g, '');
     myApp = myApp.replace(/My App/g, config.title);
+    myApp = myApp.replace(/--app-primary-color: #4285f4;/,'--app-primary-color: ' + config.appPrimaryColor + ';');
+    myApp = myApp.replace(/--app-secondary-color: black;/,'--app-secondary-color: ' + config.appSecondaryColor + ';');
     var views = '\n';
     var refs = '\n';
     var lazy = '\n';
     for(var i=0; i<config.sections.length; i++) {
         views += '\t\t<'+config.prefix+config.sections[i]+' name="'+config.sections[i]+'"></'+config.prefix+config.sections[i]+'>\n';
-        refs += '\t\t<a name="'+config.sections[i]+'" href="[[rootPath]]'+config.sections[i]+'">'+config.sectionsName[i]+'<\/a>\n';
+        refs += '\t\t<a name="'+config.sections[i]+'" href="[[rootPath]]'+config.sections[i]+'">'+config.sectionsNameMenu[i]+'<\/a>\n';
         lazy += '<link rel="lazy-import" href="'+config.prefix+config.sections[i]+'.html">\n';
     }
     myApp = myApp.replace(/-VIEWS-/, views);
@@ -80,6 +84,8 @@ changeFiles = function() {
     var view =myView;
     for(var i=0; i<config.sections.length; i++) {
         view =myView;
+        view = view.replace(/\s*<!--.*[^>]*-->/g, '');
+        view = view.replace(/<div class="circle">1<\/div>/,'');
         view = view.replace(/return 'my-view1';/, "return '"+config.prefix+config.sections[i]+"';");
         view = view.replace(/MyView1/g, config.sectionClass[i]);
         view = view.replace(/id="my-view1"/g, 'id="'+config.prefix+config.sections[i]+'"');
