@@ -21,93 +21,127 @@
 //
 
 var fs = require('fs');
-
 var config = JSON.parse(fs.readFileSync('config.app.json', 'utf8'));
 
-var dir1 = 'CHANGES';
-var dir2 = 'CHANGES/src';
-if (!fs.existsSync(dir1)){ fs.mkdirSync(dir1); }
-if (!fs.existsSync(dir2)){ fs.mkdirSync(dir2); }
+changeFiles = function() {
+    var dir1 = 'CHANGES';
+    var dir2 = 'CHANGES/src';
+    if (!fs.existsSync(dir1)){ fs.mkdirSync(dir1); }
+    if (!fs.existsSync(dir2)){ fs.mkdirSync(dir2); }
 
-var indexHtml = fs.readFileSync('index.html','utf8');
-var manifest = fs.readFileSync('manifest.json','utf8');
-var bower = fs.readFileSync('bower.json','utf8');
-var myApp =  fs.readFileSync('src/my-app.html','utf8');
-var myView = fs.readFileSync('src/my-view1.html', 'utf8');
+    var indexHtml = fs.readFileSync('index.html','utf8');
+    var manifest = fs.readFileSync('manifest.json','utf8');
+    var bower = fs.readFileSync('bower.json','utf8');
+    var myApp =  fs.readFileSync('src/my-app.html','utf8');
+    var myView = fs.readFileSync('src/my-view1.html', 'utf8');
 
-indexHtml = indexHtml.replace(/My App/g, config.title);
-manifest = manifest.replace(/My App/g, config.title);
-bower = bower.replace(/My App/g, config.title);
-bower = bower.replace(/\@autor/g, config.autor);
-myApp = myApp.replace(/<my-view1/, '-VIEWS-<my-view1');
-myApp = myApp.replace(/<my-view[0-9] name="view[0-9]"><\/my-view[0-9]>/g,'');
-myApp = myApp.replace(/<a name="view1"/, '-REFS-<a name="view1"');
-myApp = myApp.replace(/<a name="view[0-9]" href="\[\[rootPath\]\]view[0-9]">View\s[A-Za-z]*<\/a>/g, '');
-myApp = myApp.replace(/<link rel="lazy-import" href="my-view1/, '-LAZY-<link rel="lazy-import" href="my-view1');
-myApp = myApp.replace(/<link rel="lazy-import" href="my-view[0-9].html">/g, '');
-myApp = myApp.replace(/My App/g, config.title);
-var views = '\n';
-var refs = '\n';
-var lazy = '\n';
-for(var i=0; i<config.sections.length; i++) {
-    views += '\t\t<'+config.prefix+config.sections[i]+' name="'+config.sections[i]+'"></'+config.prefix+config.sections[i]+'>\n';
-    refs += '\t\t<a name="'+config.sections[i]+'" href="[[rootPath]]'+config.sections[i]+'">'+config.sectionsName[i]+'<\/a>\n';
-    lazy += '<link rel="lazy-import" href="'+config.prefix+config.sections[i]+'.html">\n';
+    indexHtml = indexHtml.replace(/My App/g, config.title);
+    manifest = manifest.replace(/My App/g, config.title);
+    bower = bower.replace(/My App/g, config.title);
+    bower = bower.replace(/\@autor/g, config.autor);
+    myApp = myApp.replace(/<my-view1/, '-VIEWS-<my-view1');
+    myApp = myApp.replace(/<my-view[0-9] name="view[0-9]"><\/my-view[0-9]>/g,'');
+    myApp = myApp.replace(/<a name="view1"/, '-REFS-<a name="view1"');
+    myApp = myApp.replace(/<a name="view[0-9]" href="\[\[rootPath\]\]view[0-9]">View\s[A-Za-z]*<\/a>/g, '');
+    myApp = myApp.replace(/<link rel="lazy-import" href="my-view1/, '-LAZY-<link rel="lazy-import" href="my-view1');
+    myApp = myApp.replace(/<link rel="lazy-import" href="my-view[0-9].html">/g, '');
+    myApp = myApp.replace(/My App/g, config.title);
+    var views = '\n';
+    var refs = '\n';
+    var lazy = '\n';
+    for(var i=0; i<config.sections.length; i++) {
+        views += '\t\t<'+config.prefix+config.sections[i]+' name="'+config.sections[i]+'"></'+config.prefix+config.sections[i]+'>\n';
+        refs += '\t\t<a name="'+config.sections[i]+'" href="[[rootPath]]'+config.sections[i]+'">'+config.sectionsName[i]+'<\/a>\n';
+        lazy += '<link rel="lazy-import" href="'+config.prefix+config.sections[i]+'.html">\n';
+    }
+    myApp = myApp.replace(/-VIEWS-/, views);
+    myApp = myApp.replace(/-REFS-/, refs);
+    myApp = myApp.replace(/-LAZY-/, lazy);
+
+    for(var i=0; i<config.sections.length; i++) {
+        myApp = myApp.replace(/my-view[0-9].html/,config.prefix+config.sections[0]+'.html');
+    }
+
+    myApp = myApp.replace(/this\.page = page \|\| 'view1';/, "this.page = page || '" + config.sections[0]+"';");
+    myApp = myApp.replace(/this\.resolveUrl\('my-' \+ page \+ '\.html'\);/, "this.resolveUrl('"+config.prefix+"' + page + '.html');");
+
+    //console.log(indexHtml);
+    fs.writeFile('./CHANGES/index.html', indexHtml, 'utf-8', function() { console.log('index.htnl FIXED'); });
+
+    //console.log(manifest);
+    fs.writeFile('./CHANGES/manifest.json', manifest, 'utf-8', function() { console.log('manifest.json FIXED'); });
+
+    //console.log(bower);
+    fs.writeFile('./CHANGES/bower.json', bower, 'utf-8', function() { console.log('bower.json FIXED'); });
+
+    //console.log(myApp);
+    fs.writeFile('./CHANGES/src/my-app.html', myApp, 'utf-8', function() { console.log('my-app.html FIXED'); });
+
+    var view =myView;
+    for(var i=0; i<config.sections.length; i++) {
+        view =myView;
+        view = view.replace(/return 'my-view1';/, "return '"+config.prefix+config.sections[i]+"';");
+        view = view.replace(/MyView1/g, config.sectionClass[i]);
+        view = view.replace(/id="my-view1"/g, 'id="'+config.prefix+config.sections[i]+'"');
+        view = view.replace(/View One/, config.sectionsTitle[i]);
+
+        //console.log(view);
+        fs.writeFile('./CHANGES/src/'+config.prefix+config.sections[i]+'.html', view, 'utf-8', function() { console.log('section FIXED'); });
+    }
+
+    var dir = 'OLD';
+    if (!fs.existsSync(dir)){ fs.mkdirSync(dir); }
+    dir = 'OLD/src';
+    if (!fs.existsSync(dir)){ fs.mkdirSync(dir); }
+
+    // CP SEG OLD FILES
+    var oldPath = './';
+    var newPath = 'OLD/';
+    var pre = 'my-';
+    var secFiles = ['view1', 'view2', 'view3'];
+    moveFiles(pre, secFiles, oldPath, newPath);
+
+    // MOVE NEW FILES
+    var oldPath = 'CHANGES/';
+    var newPath = './';
+    var pre = config.prefix;
+    var secFiles = config.sections;
+    moveFiles(pre, secFiles, oldPath, newPath);
+};
+
+revoke = function() {
+    var oldPath = './';
+    var newPath = 'CHANGES/';
+    var pre = config.prefix;
+    var secFiles = config.sections;
+    moveFiles(pre, secFiles, oldPath, newPath);
+
+    var oldPath = 'OLD/';
+    var newPath = './';
+    var pre = 'my-';
+    var secFiles = ['view1', 'view2', 'view3'];
+    moveFiles(pre, secFiles, oldPath, newPath);
+};
+
+moveFiles = function(pre, secFiles, oldPath, newPath) {
+    console.log('MOVING...'); 
+    console.log(oldPath + 'index.html  ->  ' + newPath + 'index.html');
+    fs.renameSync(oldPath + 'index.html', newPath + 'index.html');
+    console.log(oldPath + 'manifest.json  ->  ' + newPath + 'manifest.json');
+    fs.renameSync(oldPath + 'manifest.json', newPath + 'manifest.json');
+    console.log(oldPath + 'bower.json  ->  ' + newPath + 'bower.json');
+    fs.renameSync(oldPath + 'bower.json', newPath + 'bower.json');
+    console.log(oldPath + 'src/my-app.html  ->  ' + newPath + 'src/my-app.html');
+    fs.renameSync(oldPath + 'src/my-app.html', newPath + 'src/my-app.html');
+    for(var i=0; i<secFiles.length; i++) {
+        console.log('MOVE ' + oldPath + 'src/'+pre+secFiles[i]+'.html  ->  ' + newPath + 'src/'+pre+secFiles[i]+'.html');
+        fs.renameSync(oldPath + 'src/'+pre+secFiles[i]+'.html', newPath + 'src/'+pre+secFiles[i]+'.html');
+    }
 }
-myApp = myApp.replace(/-VIEWS-/, views);
-myApp = myApp.replace(/-REFS-/, refs);
-myApp = myApp.replace(/-LAZY-/, lazy);
 
-for(var i=0; i<config.sections.length; i++) {
-    myApp = myApp.replace(/my-view[0-9].html/,config.prefix+config.sections[0]+'.html');
+if (process.argv[2] === undefined) {
+    changeFiles();
 }
-
-myApp = myApp.replace(/this\.page = page \|\| 'view1';/, "this.page = page || '" + config.sections[0]+"';");
-myApp = myApp.replace(/this\.resolveUrl\('my-' \+ page \+ '\.html'\);/, "this.resolveUrl('"+config.prefix+"' + page + '.html');");
-
-//console.log(indexHtml);
-fs.writeFile('./CHANGES/index.html', indexHtml, 'utf-8', function() { console.log('index.htnl FIXED'); });
-
-//console.log(manifest);
-fs.writeFile('./CHANGES/manifest.json', manifest, 'utf-8', function() { console.log('manifest.json FIXED'); });
-
-//console.log(bower);
-fs.writeFile('./CHANGES/bower.json', bower, 'utf-8', function() { console.log('bower.json FIXED'); });
-
-//console.log(myApp);
-fs.writeFile('./CHANGES/src/my-app.html', myApp, 'utf-8', function() { console.log('my-app.html FIXED'); });
-
-var view =myView;
-for(var i=0; i<config.sections.length; i++) {
-    view =myView;
-    view = view.replace(/return 'my-view1';/, "return '"+config.prefix+config.sections[i]+"';");
-    view = view.replace(/MyView1/g, config.sectionClass[i]);
-    view = view.replace(/id="my-view1"/g, 'id="'+config.prefix+config.sections[i]+'"');
-    view = view.replace(/View One/, config.sectionsTitle[i]);
-
-    //console.log(view);
-    fs.writeFile('./CHANGES/src/'+config.prefix+config.sections[i]+'.html', view, 'utf-8', function() { console.log('section FIXED'); });
+if (process.argv[2] === 'revoke') {
+    revoke();
 }
-
-// MOVE OLD FILES
-var dir = 'OLD';
-if (!fs.existsSync(dir)){ fs.mkdirSync(dir); }
-dir = 'OLD/src';
-if (!fs.existsSync(dir)){ fs.mkdirSync(dir); }
-
-fs.renameSync('index.html', 'OLD/index.html');
-fs.renameSync('manifest.json', 'OLD/manifest.json');
-fs.renameSync('bower.json', 'OLD/bower.json');
-fs.renameSync('src/my-app.html', 'OLD/src/my-view1.html');
-fs.renameSync('src/my-view1.html', 'OLD/src/my-view1.html');
-fs.renameSync('src/my-view2.html', 'OLD/src/my-view2.html');
-fs.renameSync('src/my-view3.html', 'OLD/src/my-view3.html');
-
-fs.renameSync('CHANGES/index.html', 'index.html');
-fs.renameSync('CHANGES/manifest.json', 'manifest.json');
-fs.renameSync('CHANGES/bower.json', 'bower.json');
-fs.renameSync('CHANGES/src/my-app.html', 'src/my-app.html');
-for(var i=0; i<config.sections.length; i++) {
-    fs.renameSync('CHANGES/src/'+config.prefix+config.sections[i]+'.html', 'src/'+config.prefix+config.sections[i]+'.html');
-}
-//*/
