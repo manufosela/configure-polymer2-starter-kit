@@ -34,6 +34,7 @@ changeFiles = function() {
     var bower = fs.readFileSync('bower.json','utf8');
     var myApp =  fs.readFileSync('src/my-app.html','utf8');
     var myView = fs.readFileSync('src/my-view1.html', 'utf8');
+    var myView404 = fs.readFileSync('src/my-view404.html', 'utf8');
 
     indexHtml = indexHtml.replace(/\s*<!--.*[^>]*-->/g, '');
     indexHtml = indexHtml.replace(/My App/g, config.title);
@@ -47,6 +48,7 @@ changeFiles = function() {
     myApp = myApp.replace(/<a name="view[0-9]" href="\[\[rootPath\]\]view[0-9]">View\s[A-Za-z]*<\/a>/g, '');
     myApp = myApp.replace(/<link rel="lazy-import" href="my-view1/, '-LAZY-<link rel="lazy-import" href="my-view1');
     myApp = myApp.replace(/<link rel="lazy-import" href="my-view[0-9].html">/g, '');
+    myApp = myApp.replace(/my-view404/g, config.prefix+'view404');
     myApp = myApp.replace(/My App/g, config.title);
     myApp = myApp.replace(/--app-primary-color: #4285f4;/,'--app-primary-color: ' + config.appPrimaryColor + ';');
     myApp = myApp.replace(/--app-secondary-color: black;/,'--app-secondary-color: ' + config.appSecondaryColor + ';');
@@ -94,6 +96,15 @@ changeFiles = function() {
         //console.log(view);
         fs.writeFile('./CHANGES/src/'+config.prefix+config.sections[i]+'.html', view, 'utf-8', function() { console.log('section FIXED'); });
     }
+
+    // my-view404
+    view404 = myView404;
+    view404 = view404.replace(/return 'my-view404';/, "return '"+config.prefix+"view404';");
+    view404 = view404.replace(/MyView404/g, config.prefixClass+'View404');
+    view404 = view404.replace(/id="my-view404"/g, 'id="'+config.prefix+'view404"');
+    
+    console.log(view404);
+    fs.writeFile('./CHANGES/src/'+config.prefix+'view404.html', view404, 'utf-8', function() { console.log('section FIXED'); });
 
     var dir = 'OLD';
     if (!fs.existsSync(dir)){ fs.mkdirSync(dir); }
@@ -143,6 +154,8 @@ moveFiles = function(pre, secFiles, oldPath, newPath) {
         console.log('MOVE ' + oldPath + 'src/'+pre+secFiles[i]+'.html  ->  ' + newPath + 'src/'+pre+secFiles[i]+'.html');
         fs.renameSync(oldPath + 'src/'+pre+secFiles[i]+'.html', newPath + 'src/'+pre+secFiles[i]+'.html');
     }
+    console.log('MOVE ' + oldPath + 'src/'+pre+'view404.html  ->  ' + newPath + 'src/'+pre+'view404.html');
+    fs.renameSync(oldPath + 'src/'+pre+'view404.html', newPath + 'src/'+pre+'view404.html');
 }
 
 if (process.argv[2] === undefined) {
