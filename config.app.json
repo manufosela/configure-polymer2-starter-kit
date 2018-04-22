@@ -1,33 +1,39 @@
 {
-    "title": "Kairós Formación",
+    "title": "MI APLICACIÓN",
     "author": "@manufosela",
     "sectionsTitle": [
-        "Selecciona la capacidad", 
-        "Selecciona el recurso",
-        "Selecciona los cursos",
-        "Resumen"
+        "SECCION 1", 
+        "SECCION 2",
+        "SECCION 3",
+        "SECCION 4",
+        "SECCION 5",
+        "SECCION 6"
     ],
-    "sectionsNameMenu": [
-        "Capacidad", 
-        "Recurso",
-        "Curso",
-        "Resumen"
+    "sectionsName": [
+        "SECCION1", 
+        "SECCION2",
+        "SECCION3",
+        "SECCION4",
+        "SECCION5",
+        "SECCION6"
     ],
     "sections":[
-        "capacidad",
-        "recurso",
-        "cursos",
-        "resumen"
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six"
     ],
-    "class": "KairosFormacion",
-    "className": "kairos-formacion",
+    "class": "MiAplicacion",
+    "className": "mi-aplicacion",
     "sectionClass":[
-        "FormacionCapacidad",
-        "FormacionRecurso",
-        "FormacionCurso",
-        "FormacionResumen"
+        "SectionOne",
+        "SectionTwo",
+        "SectionThree",
+        "SectionFour",
+        "SectionFive",
+        "SectionSix"
     ],
-    "prefix": "formacion-",
-    "appPrimaryColor": "#FF7900",
-    "appSecondaryColor": "#8f8f8f"
+    "prefix": "section-"
 }
